@@ -11,16 +11,22 @@ public class CurrencyPair extends APIResponse {
     private final String dataSource;
     private final BigDecimal value;
     private final LocalDate valueDate;
+    private final double changeSinceLastDayInPercent;
 
-    public CurrencyPair(int code, String message,
-                        String baseCurrency, String quoteCurrency,
-                        String dataSource, BigDecimal value, LocalDate valueDate) {
-        super(code, message);
+    public CurrencyPair(String baseCurrency, String quoteCurrency,
+                        String dataSource, BigDecimal value,
+                        LocalDate valueDate, double changeSinceLastDayInPercent) {
+        super(CORRECT_RESPONSE_CODE, CORRECT_RESPONSE_MESSAGE);
         this.baseCurrency = baseCurrency;
         this.quoteCurrency = quoteCurrency;
         this.dataSource = dataSource;
         this.value = value;
         this.valueDate = valueDate;
+        this.changeSinceLastDayInPercent = changeSinceLastDayInPercent;
+    }
+
+    public double getChangeSinceLastDayInPercent() {
+        return changeSinceLastDayInPercent;
     }
 
     public String getDataSource() {
