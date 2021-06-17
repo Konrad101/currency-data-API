@@ -1,5 +1,6 @@
 package com.learning.currencyprovider.dataProviders.api.connectors.bittrex;
 
+import com.learning.currencyprovider.CurrencyPair;
 import com.learning.currencyprovider.dataProviders.api.connectors.HttpRequestConnector;
 import com.learning.currencyprovider.dataProviders.api.connectors.IAPIConnector;
 import com.learning.currencyprovider.dataProviders.api.connectors.IAPIDataProvider;
@@ -22,10 +23,13 @@ class BittrexCurrencyProviderTest {
                 "USD", "BTC", "ETH", "LTC", "DOGE"
         ));
 
-        Set<String> availableCurrencies = dataProvider.getAvailableCurrencies();
+        CurrencyPair currencyPair = dataProvider.getRecentCurrencyRate("DOGE", "LTC");
+        assertNotNull(currencyPair);
+        System.out.println(currencyPair.getValue());
+        /*Set<String> availableCurrencies = dataProvider.getAvailableCurrencies();
         assertNotNull(availableCurrencies);
         for(String currency : currencies){
             assertTrue(availableCurrencies.contains(currency));
-        }
+        }*/
     }
 }

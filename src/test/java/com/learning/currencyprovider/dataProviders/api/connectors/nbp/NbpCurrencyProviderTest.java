@@ -25,7 +25,7 @@ class NbpCurrencyProviderTest {
 
         Set<String> availableCurrencies = dataProvider.getAvailableCurrencies();
         assertNotNull(availableCurrencies);
-        for(String currency : currencies){
+        for (String currency : currencies) {
             assertTrue(availableCurrencies.contains(currency));
         }
     }

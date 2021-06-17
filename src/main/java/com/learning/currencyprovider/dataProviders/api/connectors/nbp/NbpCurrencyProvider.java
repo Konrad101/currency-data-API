@@ -28,7 +28,7 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
 
     public NbpCurrencyProvider(@Qualifier("Http") IAPIConnector apiConnector) {
         this.apiConnector = apiConnector;
-        if(availableCurrencies == null) {
+        if (availableCurrencies == null) {
             downloadAvailableCurrenciesFromAPI();
         }
     }
