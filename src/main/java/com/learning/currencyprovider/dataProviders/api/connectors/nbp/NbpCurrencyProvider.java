@@ -28,7 +28,9 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
 
     public NbpCurrencyProvider(@Qualifier("Http") IAPIConnector apiConnector) {
         this.apiConnector = apiConnector;
-        downloadAvailableCurrenciesFromAPI();
+        if(availableCurrencies == null) {
+            downloadAvailableCurrenciesFromAPI();
+        }
     }
 
     @Override
@@ -41,23 +43,21 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
 
     @Override
     public Set<String> getAvailableCurrencies() {
-        if (availableCurrencies != null) {
-            return availableCurrencies;
+        if (availableCurrencies == null) {
+            downloadAvailableCurrenciesFromAPI();
         }
 
-        downloadAvailableCurrenciesFromAPI();
         return availableCurrencies;
     }
 
     private void downloadAvailableCurrenciesFromAPI() {
         JSONArray response = apiConnector.getResponse(ALL_CURRENCIES_RECENT_RATES_URL);
         JSONArray rates = (JSONArray) getKeyValueFromResponse(response, "rates");
-        String ratesDate = (String) getKeyValueFromResponse(response, "effectiveDate");
-        if (rates == null || ratesDate == null) {
+        if (rates == null || rates.length() == 0) {
             return;
         }
 
-        lastUpdateDate = LocalDate.parse(ratesDate);
+        lastUpdateDate = LocalDate.now();
         availableCurrencies = new HashSet<>();
         for (int i = 0; i < rates.length(); i++) {
             JSONObject rate = (JSONObject) rates.get(i);
