@@ -24,7 +24,7 @@ public class ComplexCurrencyDataProvider implements ICurrencyDataProvider {
     public APIResponse getResponse(String baseCurrency, String quoteCurrency) {
         return new CurrencyPair(baseCurrency, quoteCurrency,
                 getSource(), new BigDecimal("1.23456"),
-                LocalDate.now(), 12.5);
+                LocalDate.now());
     }
 
     @Override
