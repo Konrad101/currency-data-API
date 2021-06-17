@@ -25,7 +25,7 @@ public class SimpleProviderManagerManager implements IProviderManager {
         if (availableCurrencies.contains(baseCurrency) && availableCurrencies.contains(quoteCurrency)) {
             return new CurrencyPair(baseCurrency, quoteCurrency,
                     getSource(), value,
-                    LocalDate.now(), 0.12);
+                    LocalDate.now());
         }
 
         return new APIResponse(404, "Currency not available.");

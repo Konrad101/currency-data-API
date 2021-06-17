@@ -8,6 +8,5 @@ import java.util.Set;
 public interface IAPIDataProvider {
     void updateAvailableCurrencies();
     Set<String> getAvailableCurrencies();
-    LocalDate getDateOfMostRecentCurrencyRate(String baseCurrency, String quoteCurrency);
     CurrencyPair getRecentCurrencyRate(String baseCurrency, String quoteCurrency);
 }

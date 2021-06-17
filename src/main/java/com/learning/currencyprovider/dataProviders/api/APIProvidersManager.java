@@ -2,7 +2,6 @@ package com.learning.currencyprovider.dataProviders.api;
 
 import com.learning.currencyprovider.CurrencyPair;
 import com.learning.currencyprovider.dataProviders.IProviderManager;
-import com.learning.currencyprovider.dataProviders.api.APIResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +18,7 @@ public class APIProvidersManager implements IProviderManager {
     public APIResponse getResponse(String baseCurrency, String quoteCurrency) {
         return new CurrencyPair(baseCurrency, quoteCurrency,
                 getSource(), new BigDecimal("1.23456"),
-                LocalDate.now(), 12.5);
+                LocalDate.now());
     }
 
     private String getSource() {

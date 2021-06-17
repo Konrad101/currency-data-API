@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.concurrent.CompletionException;
 
 @Component
 @Qualifier("Http")
@@ -24,12 +25,16 @@ public class HttpRequestConnector implements IAPIConnector {
         if (url == null) {
             throw new IllegalArgumentException();
         }
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder(URI.create(url)).build();
-        String response = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::body)
-                .join();
-        return createJSONArrayFromResponse(response);
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder(URI.create(url)).build();
+            String response = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(HttpResponse::body)
+                    .join();
+            return createJSONArrayFromResponse(response);
+        } catch (CompletionException ignored) {
+        }
+        return null;
     }
 
     private JSONArray createJSONArrayFromResponse(String response) {
@@ -59,14 +64,14 @@ public class HttpRequestConnector implements IAPIConnector {
     public boolean jsonResponseIsJsonObject(String response) {
         if (response != null) {
             // remove white spaces
-            response = response.replaceAll("\\s","");
+            response = response.replaceAll("\\s", "");
             return response.startsWith("{") && response.endsWith("}");
         }
         return false;
     }
 
     private String removeUnnecessaryWhiteSpaces(String response) {
-        if(response == null){
+        if (response == null) {
             return null;
         }
 

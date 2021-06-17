@@ -1,15 +1,17 @@
 package com.learning.currencyprovider.dataProviders.api.connectors.nbp;
 
+import com.learning.currencyprovider.CurrencyPair;
 import com.learning.currencyprovider.dataProviders.api.connectors.HttpRequestConnector;
 import com.learning.currencyprovider.dataProviders.api.connectors.IAPIConnector;
 import com.learning.currencyprovider.dataProviders.api.connectors.IAPIDataProvider;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class NbpCurrencyProviderTest {
 
@@ -17,11 +19,13 @@ class NbpCurrencyProviderTest {
     void getAvailableCurrencies() {
         IAPIConnector connector = new HttpRequestConnector();
         IAPIDataProvider dataProvider = new NbpCurrencyProvider(connector);
+
         Set<String> currencies = new HashSet<>(Arrays.asList(
-                "USD", "AUD"
+                "USD", "AUD", "PLN"
         ));
 
         Set<String> availableCurrencies = dataProvider.getAvailableCurrencies();
+        assertNotNull(availableCurrencies);
         for(String currency : currencies){
             assertTrue(availableCurrencies.contains(currency));
         }

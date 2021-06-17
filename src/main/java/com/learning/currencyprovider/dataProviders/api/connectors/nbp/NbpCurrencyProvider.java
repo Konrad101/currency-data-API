@@ -7,11 +7,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
 public class NbpCurrencyProvider implements IAPIDataProvider {
+    private static final String DATA_SOURCE = "NBP Web API";
     private static final String BASE_API_CURRENCY = "PLN";
 
     private static final String RATES_TABLE_TYPE = "A";
@@ -25,6 +28,7 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
 
     public NbpCurrencyProvider(@Qualifier("Http") IAPIConnector apiConnector) {
         this.apiConnector = apiConnector;
+        downloadAvailableCurrenciesFromAPI();
     }
 
     @Override
@@ -46,90 +50,79 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
     }
 
     private void downloadAvailableCurrenciesFromAPI() {
-        // what if url is invalid?
-        // what if there is no internet connection?
         JSONArray response = apiConnector.getResponse(ALL_CURRENCIES_RECENT_RATES_URL);
-        JSONObject responseObject = (JSONObject) response.get(0);
-        JSONArray rates = (JSONArray) responseObject.get("rates");
+        JSONArray rates = (JSONArray) getKeyValueFromResponse(response, "rates");
+        String ratesDate = (String) getKeyValueFromResponse(response, "effectiveDate");
+        if (rates == null || ratesDate == null) {
+            return;
+        }
 
+        lastUpdateDate = LocalDate.parse(ratesDate);
         availableCurrencies = new HashSet<>();
         for (int i = 0; i < rates.length(); i++) {
             JSONObject rate = (JSONObject) rates.get(i);
             availableCurrencies.add((String) rate.get("code"));
         }
         availableCurrencies.add(BASE_API_CURRENCY);
-        lastUpdateDate = LocalDate.parse((String) responseObject.get("effectiveDate"));
-    }
-
-    @Override
-    public LocalDate getDateOfMostRecentCurrencyRate(String baseCurrency, String quoteCurrency) {
-        return null;
     }
 
     @Override
     public CurrencyPair getRecentCurrencyRate(String baseCurrency, String quoteCurrency) {
-        return null;
-    }
-
-    /*public List<CurrencyPair> getCurrencyDataFromDatePeriod(Currencies currency, LocalDate from, LocalDate to) {
-        List<CurrencyPair> currencyPairData = new ArrayList<>();
-        JSONArray jsonArrayResponse;
-        for (int i = 0; i < adjustedDates.size() - 1; i++) {
-            LocalDate dateFrom = adjustedDates.get(i) == from ?
-                    adjustedDates.get(i) :
-                    adjustedDates.get(i).plusDays(1);
-            jsonArrayResponse = apiConnector.getResponse(URL_BEGINNING + currency + "/"
-                    + parseDateToUrlFormat(dateFrom) + "/"
-                    + parseDateToUrlFormat(adjustedDates.get(i + 1)));
-            currencyPairData.addAll(getCurrencyValuesFromJson(jsonArrayResponse));
+        if (baseCurrency.equalsIgnoreCase(quoteCurrency) ||
+                !availableCurrencies.contains(baseCurrency.toUpperCase()) ||
+                !availableCurrencies.contains(quoteCurrency.toUpperCase())) {
+            return null;
         }
-
-        return currencyPairData;
-    }
-
-    private List<CurrencyPair> getCurrencyValuesFromJson(JSONArray jsonArrayResponse) {
-        List<CurrencyPair> currencyPairData = new ArrayList<>();
-        if (jsonArrayResponse != null) {
-            for (int i = 0; i < jsonArrayResponse.length(); i++) {
-                JSONObject jsonObject = (JSONObject) jsonArrayResponse.get(i);
-                Currencies currencyCode = Currencies.valueOf(jsonObject.getString("code"));
-                JSONArray rates = (JSONArray) jsonObject.get("rates");
-                for (int j = 0; j < rates.length(); j++) {
-                    JSONObject rateObj = (JSONObject) rates.get(j);
-                    currencyPairData.add(createCurrencyFromRate(rateObj, currencyCode));
-                }
-            }
-        }
-
-        return currencyPairData;
-    }
-
-    private CurrencyPair createCurrencyFromRate(JSONObject rate, Currencies currencyCode) {
-        if (rate == null) {
+        JSONArray response = apiConnector.getResponse(ALL_CURRENCIES_RECENT_RATES_URL);
+        JSONArray rates = (JSONArray) getKeyValueFromResponse(response, "rates");
+        String rateDate = (String) getKeyValueFromResponse(response, "effectiveDate");
+        if (rates == null || rateDate == null) {
             return null;
         }
 
-        return new CurrencyPair(
-                BASE_API_CURRENCY,
-                currencyCode,
-                LocalDate.parse(rate.getString("effectiveDate")),
-                rate.getDouble("mid"));
+        BigDecimal baseCurrencyValue = getCurrencyValueInBaseCurrencyFromRates(rates, baseCurrency);
+        BigDecimal quoteCurrencyValue = getCurrencyValueInBaseCurrencyFromRates(rates, quoteCurrency);
+
+        return createCurrencyPair(baseCurrency, quoteCurrency,
+                baseCurrencyValue, quoteCurrencyValue, LocalDate.parse(rateDate));
     }
 
-    @Override
-    public CurrencyPair getCurrencyDataFromDay(Currencies currency, LocalDate day) {
-        List<CurrencyPair> currencyPairList = getCurrencyDataFromDatePeriod(currency, day, day);
-        return currencyPairList.size() > 0 ? currencyPairList.get(0) : null;
+    private CurrencyPair createCurrencyPair(String baseCurrency, String quoteCurrency,
+                                            BigDecimal baseCurrencyValue, BigDecimal quoteCurrencyValue,
+                                            LocalDate valueDate) {
+        BigDecimal currencyPairValue = baseCurrencyValue.divide(quoteCurrencyValue, RoundingMode.HALF_UP);
+        return new CurrencyPair(baseCurrency, quoteCurrency, DATA_SOURCE, currencyPairValue, valueDate);
     }
 
-    private String parseDateToUrlFormat(LocalDate date) {
-        if (date != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            return formatter.format(date);
+    private BigDecimal getCurrencyValueInBaseCurrencyFromRates(JSONArray rates, String quoteCurrency) {
+        if (rates == null || rates.length() == 0) {
+            return null;
+        } else if (quoteCurrency.equalsIgnoreCase(BASE_API_CURRENCY)) {
+            return new BigDecimal("1.0000");
+        }
+
+        for (int i = 0; i < rates.length(); i++) {
+            JSONObject rate = (JSONObject) rates.get(i);
+            String currencyCode = (String) rate.get("code");
+            if (quoteCurrency.equalsIgnoreCase(currencyCode)) {
+                return (BigDecimal) rate.get("mid");
+            }
         }
 
         return null;
     }
-*/
 
+    private Object getKeyValueFromResponse(JSONArray response, String key) {
+        if (response == null || response.length() == 0
+                || key == null || key.length() == 0) {
+            return null;
+        }
+
+        JSONObject responseObject = (JSONObject) response.get(0);
+        if (responseObject.keySet().contains(key)) {
+            return responseObject.get(key);
+        }
+
+        return null;
+    }
 }
