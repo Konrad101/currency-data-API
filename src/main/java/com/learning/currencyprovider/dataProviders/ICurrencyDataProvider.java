@@ -3,11 +3,12 @@ package com.learning.currencyprovider.dataProviders;
 import com.learning.currencyprovider.dataProviders.api.APIResponse;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Set;
 
 @Component
 public interface ICurrencyDataProvider {
-    List<String> getAvailableCurrencies();
+    void updateAvailableCurrencies();
+    Set<String> getAvailableCurrencies();
     APIResponse getResponse(String baseCurrency, String quoteCurrency);
     String getSource();
 }

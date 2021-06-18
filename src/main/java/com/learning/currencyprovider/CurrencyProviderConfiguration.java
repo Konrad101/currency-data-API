@@ -37,9 +37,18 @@ public class CurrencyProviderConfiguration extends CachingConfigurerSupport {
         return new EhCacheCacheManager(ehCacheManager());
     }
 
-    @Bean
+    @Bean("CurrencyPairLimiter")
+    public Bucket currencyPairBucket() {
+        return createLimiter(2, Duration.ofSeconds(1));
+    }
+
+    @Bean("AvailableCurrenciesUpdateLimiter")
     public Bucket bandwidth() {
-        Bandwidth limit = Bandwidth.classic(2, Refill.greedy(2, Duration.ofSeconds(1)));
+        return createLimiter(1, Duration.ofHours(4));
+    }
+
+    private Bucket createLimiter(int capacity, Duration duration) {
+        Bandwidth limit = Bandwidth.classic(capacity, Refill.greedy(capacity, duration));
         return Bucket4j.builder()
                 .addLimit(limit)
                 .build();

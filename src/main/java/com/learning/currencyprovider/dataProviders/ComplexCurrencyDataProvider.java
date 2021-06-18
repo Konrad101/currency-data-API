@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 @Component
 @Qualifier("Complex")
@@ -16,7 +16,12 @@ public class ComplexCurrencyDataProvider implements ICurrencyDataProvider {
     // when there won't be such a class, then return null
 
     @Override
-    public List<String> getAvailableCurrencies() {
+    public void updateAvailableCurrencies() {
+
+    }
+
+    @Override
+    public Set<String> getAvailableCurrencies() {
         return null;
     }
 
