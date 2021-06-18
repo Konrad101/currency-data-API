@@ -7,24 +7,20 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 @Qualifier("Simple")
-public class SimpleProvider implements ICurrencyDataProvider {
-    @Override
-    public void updateAvailableCurrencies() {
-
-    }
-
-    @Override
-    public Set<String> getAvailableCurrencies() {
-        return new HashSet<>(Arrays.asList("USD", "PLN", "BTC"));
+public class SimpleProviderManagerManager implements IProviderManager {
+    private List<String> getAvailableCurrencies() {
+        return new ArrayList<>(Arrays.asList("USD", "PLN", "BTC"));
     }
 
     @Override
     public APIResponse getResponse(String baseCurrency, String quoteCurrency) {
-        Set<String> availableCurrencies = getAvailableCurrencies();
+        List<String> availableCurrencies = getAvailableCurrencies();
         BigDecimal value = new BigDecimal("3.29182030");
         if (availableCurrencies.contains(baseCurrency) && availableCurrencies.contains(quoteCurrency)) {
             return new CurrencyPair(baseCurrency, quoteCurrency,
@@ -32,11 +28,10 @@ public class SimpleProvider implements ICurrencyDataProvider {
                     LocalDate.now());
         }
 
-        return new APIResponse(false, "Currency not available.");
+        return new APIResponse(404, "Currency not available.");
     }
 
-    @Override
-    public String getSource() {
+    private String getSource() {
         return "Simple provider";
     }
 }

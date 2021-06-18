@@ -5,7 +5,6 @@ import com.learning.currencyprovider.dataProviders.api.APIResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-
 public class CurrencyPair extends APIResponse {
     private final String baseCurrency;
     private final String quoteCurrency;
@@ -16,7 +15,7 @@ public class CurrencyPair extends APIResponse {
     public CurrencyPair(String baseCurrency, String quoteCurrency,
                         String dataSource, BigDecimal value,
                         LocalDate valueDate) {
-        super(true, CORRECT_RESPONSE_MESSAGE);
+        super(CORRECT_RESPONSE_CODE, CORRECT_RESPONSE_MESSAGE);
         this.baseCurrency = baseCurrency;
         this.quoteCurrency = quoteCurrency;
         this.dataSource = dataSource;
