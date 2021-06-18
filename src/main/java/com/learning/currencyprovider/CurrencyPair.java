@@ -16,7 +16,7 @@ public class CurrencyPair extends APIResponse {
     public CurrencyPair(String baseCurrency, String quoteCurrency,
                         String dataSource, BigDecimal value,
                         LocalDate valueDate) {
-        super(CORRECT_RESPONSE_CODE, CORRECT_RESPONSE_MESSAGE);
+        super(true, CORRECT_RESPONSE_MESSAGE);
         this.baseCurrency = baseCurrency;
         this.quoteCurrency = quoteCurrency;
         this.dataSource = dataSource;

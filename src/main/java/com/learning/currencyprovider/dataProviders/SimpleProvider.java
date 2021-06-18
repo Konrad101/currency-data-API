@@ -29,7 +29,7 @@ public class SimpleProvider implements ICurrencyDataProvider {
                     LocalDate.now());
         }
 
-        return new APIResponse(404, "Currency not available.");
+        return new APIResponse(false, "Currency not available.");
     }
 
     @Override

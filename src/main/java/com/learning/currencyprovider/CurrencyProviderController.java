@@ -1,8 +1,8 @@
 package com.learning.currencyprovider;
 
-import com.google.common.util.concurrent.RateLimiter;
 import com.learning.currencyprovider.dataProviders.ICurrencyDataProvider;
 import com.learning.currencyprovider.dataProviders.api.APIResponse;
+import io.github.bucket4j.Bucket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -16,28 +16,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class CurrencyProviderController {
-    private final RateLimiter rateLimiter;
     private final ICurrencyDataProvider currencyDataProvider;
+    private final Bucket bucket;
 
     public CurrencyProviderController(@Qualifier("Complex") ICurrencyDataProvider dataProvider,
-                                      @Autowired RateLimiter rateLimiter) {
+                                      @Autowired Bucket bucket) {
         currencyDataProvider = dataProvider;
-        this.rateLimiter = rateLimiter;
+        this.bucket = bucket;
     }
 
-    @Cacheable(value = "recent-rates-cache", key = "'CurrencyPairCache'+#baseCurrency+#quoteCurrency")
+    @Cacheable(value = "recent-rates-cache", key = "'CurrencyPairCache'+#baseCurrency+#quoteCurrency",
+            unless = "#result.statusCode != 429")
     @RequestMapping(value = "/currency_pair/{base_currency}-{quote_currency}", method = RequestMethod.GET)
     public ResponseEntity<APIResponse> getCurrencyData(@PathVariable(value = "base_currency") String baseCurrency,
                                                        @PathVariable(value = "quote_currency") String quoteCurrency) {
-        boolean readyToGo = rateLimiter.tryAcquire();
-        if (readyToGo) {
+        if (isTooManyRequests()) {
             APIResponse response = currencyDataProvider.getResponse(baseCurrency, quoteCurrency);
-            return new ResponseEntity<>(
-                    response,
-                    HttpStatus.OK
-            );
+            return ResponseEntity.ok(response);
         }
 
-        return new ResponseEntity<>(HttpStatus.TOO_MANY_REQUESTS);
+        return new ResponseEntity<>(
+                new APIResponse(false, "Too many requests. The limit is 2 requests per second"),
+                HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    private boolean isTooManyRequests() {
+        return bucket.tryConsume(1);
     }
 }

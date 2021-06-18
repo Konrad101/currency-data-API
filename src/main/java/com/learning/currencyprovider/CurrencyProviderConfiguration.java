@@ -1,6 +1,9 @@
 package com.learning.currencyprovider;
 
-import com.google.common.util.concurrent.RateLimiter;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Refill;
 import net.sf.ehcache.config.CacheConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -21,7 +24,7 @@ public class CurrencyProviderConfiguration extends CachingConfigurerSupport {
         cacheConfiguration.setName("recent-rates-cache");
         cacheConfiguration.setMemoryStoreEvictionPolicy("LRU");
         cacheConfiguration.setMaxBytesLocalHeap(5000L);
-        cacheConfiguration.setTimeToLiveSeconds(3600);
+        cacheConfiguration.setTimeToLiveSeconds(1800);
 
         net.sf.ehcache.config.Configuration config = new net.sf.ehcache.config.Configuration();
         config.addCache(cacheConfiguration);
@@ -35,7 +38,10 @@ public class CurrencyProviderConfiguration extends CachingConfigurerSupport {
     }
 
     @Bean
-    public RateLimiter rateLimiter() {
-        return RateLimiter.create(2, Duration.ofSeconds(15));
+    public Bucket bandwidth() {
+        Bandwidth limit = Bandwidth.classic(2, Refill.greedy(2, Duration.ofSeconds(1)));
+        return Bucket4j.builder()
+                .addLimit(limit)
+                .build();
     }
 }
