@@ -26,6 +26,11 @@ public class SimpleProvider implements ICurrencyDataProvider {
     public APIResponse getResponse(String baseCurrency, String quoteCurrency) {
         Set<String> availableCurrencies = getAvailableCurrencies();
         BigDecimal value = new BigDecimal("3.29182030");
+        try {
+            Thread.sleep(2500);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
         if (availableCurrencies.contains(baseCurrency) && availableCurrencies.contains(quoteCurrency)) {
             return new CurrencyPair(baseCurrency, quoteCurrency,
                     getSource(), value,
