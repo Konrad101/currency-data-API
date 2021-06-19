@@ -1,8 +1,7 @@
-package com.learning.currencyprovider.controllers;
+package com.learning.currencyprovider;
 
 import com.learning.currencyprovider.dataProviders.ICurrencyDataProvider;
 import com.learning.currencyprovider.dataProviders.api.APIResponse;
-
 import io.github.bucket4j.Bucket;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -17,7 +16,7 @@ public class CurrencyProviderController {
     private final Bucket recentCurrencyPairBucket;
     private final Bucket updateCurrenciesBucket;
 
-    public CurrencyProviderController(@Qualifier("APIProvider") ICurrencyDataProvider dataProvider,
+    public CurrencyProviderController(@Qualifier("Simple") ICurrencyDataProvider dataProvider,
                                       @Qualifier("CurrencyPairLimiter") Bucket recentCurrencyPairBucket,
                                       @Qualifier("AvailableCurrenciesUpdateLimiter") Bucket updateCurrenciesBucket) {
         currencyDataProvider = dataProvider;
@@ -26,7 +25,7 @@ public class CurrencyProviderController {
     }
 
     @Cacheable(value = "recent-rates-cache", key = "'CurrencyPairCache'+#baseCurrency+#quoteCurrency",
-            unless = "#result.statusCode != 429")
+            unless = "#result.statusCodeValue == 429")
     @RequestMapping(value = "/currency_pair/{base_currency}-{quote_currency}", method = RequestMethod.GET)
     public ResponseEntity<APIResponse> getCurrencyData(@PathVariable(value = "base_currency") String baseCurrency,
                                                        @PathVariable(value = "quote_currency") String quoteCurrency) {
