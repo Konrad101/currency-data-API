@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.*;
 
 @Component
@@ -19,7 +18,7 @@ public class ComplexCurrencyDataProvider implements ICurrencyDataProvider {
     private final List<IAPIDataProvider> apiProviders;
 
 
-    public ComplexCurrencyDataProvider(@Qualifier("Http") IAPIConnector connector) {
+    public ComplexCurrencyDataProvider(@Qualifier("HttpConnector") IAPIConnector connector) {
         apiProviders = new ArrayList<>(Arrays.asList(
                 new BittrexCurrencyProvider(connector),
                 new NbpCurrencyProvider(connector))
@@ -43,7 +42,7 @@ public class ComplexCurrencyDataProvider implements ICurrencyDataProvider {
         IAPIDataProvider baseCurrencyProvider = getProviderForCurrency(baseCurrency);
         IAPIDataProvider quoteCurrencyProvider = getProviderForCurrency(quoteCurrency);
         if (baseCurrencyProvider == null || quoteCurrencyProvider == null) {
-            return getNotFoundResponse();
+            return getNotFoundResponse(baseCurrency, quoteCurrency);
         }
 
         CurrencyPair requestedCurrencyPair;
@@ -52,7 +51,7 @@ public class ComplexCurrencyDataProvider implements ICurrencyDataProvider {
         } else {
             String commonProvidersCurrency = getCommonProvidersCurrency(baseCurrencyProvider, quoteCurrencyProvider);
             if (commonProvidersCurrency == null) {
-                return getNotFoundResponse();
+                return getNotFoundResponse(baseCurrency, quoteCurrency);
             }
             requestedCurrencyPair = getCurrencyValueFromProviders(
                     baseCurrencyProvider, quoteCurrencyProvider,
@@ -61,29 +60,13 @@ public class ComplexCurrencyDataProvider implements ICurrencyDataProvider {
         }
 
         return requestedCurrencyPair;
-        /*if (baseCurrencyProvider.getAvailableCurrencies().contains(quoteCurrency)) {
-            return baseCurrencyProvider.getRecentCurrencyRate(baseCurrency, quoteCurrency);
-        } else {
-            IAPIDataProvider quoteCurrencyProvider;
-            String commonProvidersCurrency;
-            for (IAPIDataProvider provider : apiProviders) {
-                if (provider != baseCurrencyProvider && provider.getAvailableCurrencies().contains(quoteCurrency)) {
-                    commonProvidersCurrency = getCommonProvidersCurrency(baseCurrencyProvider, provider);
-                    if (commonProvidersCurrency != null) {
-                        quoteCurrencyProvider = provider;
-                        break;
-                    }
-                }
-            }
-        }
-
-        return new CurrencyPair(baseCurrency, quoteCurrency,
-                "Complex provider", new BigDecimal("1.23456"),
-                LocalDate.now()
-        );*/
     }
 
     private IAPIDataProvider getProviderForCurrency(String currency) {
+        if (currency == null) {
+            return null;
+        }
+
         currency = currency.toUpperCase();
         for (IAPIDataProvider provider : apiProviders) {
             if (provider.getAvailableCurrencies().contains(currency)) {
@@ -94,14 +77,22 @@ public class ComplexCurrencyDataProvider implements ICurrencyDataProvider {
         return null;
     }
 
-    private CurrencyPair getCurrencyValueFromProviders(IAPIDataProvider firstProvider, IAPIDataProvider secondProvider,
-                                                       String baseCurrency, String quoteCurrency, String commonCurrency) {
+    private CurrencyPair getCurrencyValueFromProviders(
+            IAPIDataProvider baseCurrencyProvider, IAPIDataProvider quoteCurrencyProvider,
+            String baseCurrency, String quoteCurrency, String commonCurrency) {
+        CurrencyPair baseCommonCurrency = baseCurrencyProvider.getRecentCurrencyRate(baseCurrency, commonCurrency);
+        CurrencyPair quoteCommonCurrency = quoteCurrencyProvider.getRecentCurrencyRate(commonCurrency, quoteCurrency);
+        BigDecimal requestedCurrencyValue = baseCommonCurrency.getValue().multiply(quoteCommonCurrency.getValue());
+        String dataSource = baseCommonCurrency.getDataSource() + ", " + quoteCommonCurrency.getDataSource();
 
-        return null;
+        return new CurrencyPair(baseCurrency, quoteCurrency,
+                dataSource, requestedCurrencyValue,
+                baseCommonCurrency.getValueDate());
     }
 
-    private APIResponse getNotFoundResponse() {
-        return null;
+    private APIResponse getNotFoundResponse(String baseCurrency, String quoteCurrency) {
+        return new APIResponse(false, "Currency pair " + baseCurrency.toUpperCase() + "-"
+                + quoteCurrency.toUpperCase() + " is not available.");
     }
 
     private String getCommonProvidersCurrency(IAPIDataProvider firstProvider, IAPIDataProvider secondProvider) {

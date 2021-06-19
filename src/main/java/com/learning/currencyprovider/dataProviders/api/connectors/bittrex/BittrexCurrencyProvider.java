@@ -20,7 +20,7 @@ public class BittrexCurrencyProvider implements IAPIDataProvider {
     private static final String ALL_CURRENCIES_URL = "https://api.bittrex.com/api/v1.1/public/getcurrencies";
     private static final String CURRENCY_PAIR_TICK_URL = "https://api.bittrex.com/api/v1.1/public/getticker?market=";
 
-    private static Set<String> availableCurrencies;
+    private static Set<String> availableCurrencies = null;
     private static LocalDate lastUpdateDate;
 
     private final IAPIConnector apiConnector;
@@ -89,10 +89,13 @@ public class BittrexCurrencyProvider implements IAPIDataProvider {
 
     private BigDecimal getCurrencyValueInBaseCurrency(String quoteCurrency) {
         if (quoteCurrency.equalsIgnoreCase(BASE_API_CURRENCY)) {
-            return new BigDecimal("1.0000");
+            return new BigDecimal("1.00000000");
         }
-        JSONArray response = apiConnector.getResponse(CURRENCY_PAIR_TICK_URL +
-                BASE_API_CURRENCY + "-" + quoteCurrency);
+
+        JSONArray response = quoteCurrency.equalsIgnoreCase("USD") ?
+                apiConnector.getResponse(CURRENCY_PAIR_TICK_URL + quoteCurrency + "-" + BASE_API_CURRENCY) : // USD - BASE
+                apiConnector.getResponse(CURRENCY_PAIR_TICK_URL + BASE_API_CURRENCY + "-" + quoteCurrency);  // BASE - QUOTE
+
         if (response == null || response.length() == 0) {
             return null;
         }

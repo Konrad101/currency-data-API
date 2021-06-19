@@ -12,7 +12,7 @@ import java.net.http.HttpResponse;
 import java.util.concurrent.CompletionException;
 
 @Component
-@Qualifier("Http")
+@Qualifier("HttpConnector")
 public class HttpRequestConnector implements IAPIConnector {
 
     /**
