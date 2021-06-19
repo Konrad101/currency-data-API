@@ -17,7 +17,7 @@ public class CurrencyProviderController {
     private final Bucket recentCurrencyPairBucket;
     private final Bucket updateCurrenciesBucket;
 
-    public CurrencyProviderController(@Qualifier("ComplexProvider") ICurrencyDataProvider dataProvider,
+    public CurrencyProviderController(@Qualifier("APIProvider") ICurrencyDataProvider dataProvider,
                                       @Qualifier("CurrencyPairLimiter") Bucket recentCurrencyPairBucket,
                                       @Qualifier("AvailableCurrenciesUpdateLimiter") Bucket updateCurrenciesBucket) {
         currencyDataProvider = dataProvider;
@@ -30,7 +30,7 @@ public class CurrencyProviderController {
     @RequestMapping(value = "/currency_pair/{base_currency}-{quote_currency}", method = RequestMethod.GET)
     public ResponseEntity<APIResponse> getCurrencyData(@PathVariable(value = "base_currency") String baseCurrency,
                                                        @PathVariable(value = "quote_currency") String quoteCurrency) {
-        if (controllerCanConsumeRequest()) {
+        if (recentCurrencyPairBucket.tryConsume(1)) {
             APIResponse response = currencyDataProvider.getResponse(baseCurrency, quoteCurrency);
             return ResponseEntity.ok(response);
         }
@@ -50,9 +50,5 @@ public class CurrencyProviderController {
         return new ResponseEntity<>(
                 new APIResponse(false, "Available currencies were recently updated."),
                 HttpStatus.TOO_MANY_REQUESTS);
-    }
-
-    private boolean controllerCanConsumeRequest() {
-        return recentCurrencyPairBucket.tryConsume(1);
     }
 }

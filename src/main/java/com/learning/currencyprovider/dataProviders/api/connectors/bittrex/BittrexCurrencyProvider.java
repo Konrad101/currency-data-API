@@ -5,7 +5,6 @@ import com.learning.currencyprovider.dataProviders.api.connectors.IAPIConnector;
 import com.learning.currencyprovider.dataProviders.api.connectors.IAPIDataProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -91,9 +90,11 @@ public class BittrexCurrencyProvider implements IAPIDataProvider {
         if (quoteCurrency.equalsIgnoreCase(BASE_API_CURRENCY)) {
             return new BigDecimal("1.00000000");
         }
+        boolean isRealCurrency = quoteCurrency.equalsIgnoreCase("USD")
+                || quoteCurrency.equalsIgnoreCase("EUR");
 
-        JSONArray response = quoteCurrency.equalsIgnoreCase("USD") ?
-                apiConnector.getResponse(CURRENCY_PAIR_TICK_URL + quoteCurrency + "-" + BASE_API_CURRENCY) : // USD - BASE
+        JSONArray response = isRealCurrency ?
+                apiConnector.getResponse(CURRENCY_PAIR_TICK_URL + quoteCurrency + "-" + BASE_API_CURRENCY) : // USD or EUR - BASE
                 apiConnector.getResponse(CURRENCY_PAIR_TICK_URL + BASE_API_CURRENCY + "-" + quoteCurrency);  // BASE - QUOTE
 
         if (response == null || response.length() == 0) {
@@ -106,6 +107,10 @@ public class BittrexCurrencyProvider implements IAPIDataProvider {
         }
 
         JSONObject result = responseObject.getJSONObject("result");
-        return result.getBigDecimal("Last");
+        BigDecimal currencyValue = result.getBigDecimal("Last");
+        if (isRealCurrency) {
+            currencyValue = new BigDecimal("1.00000000").divide(currencyValue, RoundingMode.HALF_UP);
+        }
+        return currencyValue;
     }
 }

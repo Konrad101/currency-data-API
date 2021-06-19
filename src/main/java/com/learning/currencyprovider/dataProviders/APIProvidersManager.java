@@ -13,12 +13,12 @@ import java.math.BigDecimal;
 import java.util.*;
 
 @Component
-@Qualifier("ComplexProvider")
-public class ComplexCurrencyDataProvider implements ICurrencyDataProvider {
+@Qualifier("APIProvider")
+public class APIProvidersManager implements ICurrencyDataProvider {
     private final List<IAPIDataProvider> apiProviders;
 
 
-    public ComplexCurrencyDataProvider(@Qualifier("HttpConnector") IAPIConnector connector) {
+    public APIProvidersManager(@Qualifier("HttpConnector") IAPIConnector connector) {
         apiProviders = new ArrayList<>(Arrays.asList(
                 new BittrexCurrencyProvider(connector),
                 new NbpCurrencyProvider(connector))
