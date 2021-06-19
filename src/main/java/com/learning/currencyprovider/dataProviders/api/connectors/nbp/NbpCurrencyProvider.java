@@ -87,11 +87,11 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
                 baseCurrencyValue, quoteCurrencyValue, LocalDate.parse(rateDate));
     }
 
-    private JSONArray getMostRecentResponse(){
+    private JSONArray getMostRecentResponse() {
         LocalDate date = LocalDate.now();
         int daysToCheck = 30;
         JSONArray response = null;
-        while(response == null && daysToCheck-- > 0){
+        while (response == null && daysToCheck-- > 0) {
             response = apiConnector.getResponse(ALL_CURRENCIES_RECENT_RATES_URL +
                     date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             date = date.minusDays(1);

@@ -1,4 +1,4 @@
-package com.learning.currencyprovider;
+package com.learning.currencyprovider.controllers;
 
 import com.learning.currencyprovider.dataProviders.ICurrencyDataProvider;
 import com.learning.currencyprovider.dataProviders.api.APIResponse;
@@ -16,7 +16,7 @@ public class CurrencyProviderController {
     private final Bucket recentCurrencyPairBucket;
     private final Bucket updateCurrenciesBucket;
 
-    public CurrencyProviderController(@Qualifier("Simple") ICurrencyDataProvider dataProvider,
+    public CurrencyProviderController(@Qualifier("APIProvider") ICurrencyDataProvider dataProvider,
                                       @Qualifier("CurrencyPairLimiter") Bucket recentCurrencyPairBucket,
                                       @Qualifier("AvailableCurrenciesUpdateLimiter") Bucket updateCurrenciesBucket) {
         currencyDataProvider = dataProvider;

@@ -24,7 +24,7 @@ public class CurrencyProviderConfiguration extends CachingConfigurerSupport {
         cacheConfiguration.setName("recent-rates-cache");
         cacheConfiguration.setMemoryStoreEvictionPolicy("LRU");
         cacheConfiguration.setMaxBytesLocalHeap(5000L);
-        cacheConfiguration.setTimeToLiveSeconds(10);
+        cacheConfiguration.setTimeToLiveSeconds(1800);
 
         net.sf.ehcache.config.Configuration config = new net.sf.ehcache.config.Configuration();
         config.addCache(cacheConfiguration);
