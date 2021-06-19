@@ -5,11 +5,11 @@ import com.learning.currencyprovider.dataProviders.api.connectors.IAPIConnector;
 import com.learning.currencyprovider.dataProviders.api.connectors.IAPIDataProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,11 +19,11 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
 
     private static final String RATES_TABLE_TYPE = "A";
     private static final String ALL_CURRENCIES_RECENT_RATES_URL = "https://api.nbp.pl/api/exchangerates/tables/" +
-            RATES_TABLE_TYPE + "/today/";
+            RATES_TABLE_TYPE + "/";
 
     private final IAPIConnector apiConnector;
 
-    private static Set<String> availableCurrencies;
+    private static Set<String> availableCurrencies = null;
     private static LocalDate lastUpdateDate;
 
     public NbpCurrencyProvider(IAPIConnector apiConnector) {
@@ -51,7 +51,7 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
     }
 
     private void downloadAvailableCurrenciesFromAPI() {
-        JSONArray response = apiConnector.getResponse(ALL_CURRENCIES_RECENT_RATES_URL);
+        JSONArray response = getMostRecentResponse();
         JSONArray rates = (JSONArray) getKeyValueFromResponse(response, "rates");
         if (rates == null || rates.length() == 0) {
             return;
@@ -73,7 +73,7 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
                 !availableCurrencies.contains(quoteCurrency.toUpperCase())) {
             return null;
         }
-        JSONArray response = apiConnector.getResponse(ALL_CURRENCIES_RECENT_RATES_URL);
+        JSONArray response = getMostRecentResponse();
         JSONArray rates = (JSONArray) getKeyValueFromResponse(response, "rates");
         String rateDate = (String) getKeyValueFromResponse(response, "effectiveDate");
         if (rates == null || rateDate == null) {
@@ -87,6 +87,19 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
                 baseCurrencyValue, quoteCurrencyValue, LocalDate.parse(rateDate));
     }
 
+    private JSONArray getMostRecentResponse(){
+        LocalDate date = LocalDate.now();
+        int daysToCheck = 30;
+        JSONArray response = null;
+        while(response == null && daysToCheck-- > 0){
+            response = apiConnector.getResponse(ALL_CURRENCIES_RECENT_RATES_URL +
+                    date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            date = date.minusDays(1);
+        }
+
+        return response;
+    }
+
     private CurrencyPair createCurrencyPair(String baseCurrency, String quoteCurrency,
                                             BigDecimal baseCurrencyValue, BigDecimal quoteCurrencyValue,
                                             LocalDate valueDate) {
@@ -98,7 +111,7 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
         if (rates == null || rates.length() == 0) {
             return null;
         } else if (quoteCurrency.equalsIgnoreCase(BASE_API_CURRENCY)) {
-            return new BigDecimal("1.0000");
+            return new BigDecimal("1.00000000");
         }
 
         for (int i = 0; i < rates.length(); i++) {

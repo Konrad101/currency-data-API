@@ -39,8 +39,8 @@ public class ComplexCurrencyDataProvider implements ICurrencyDataProvider {
 
     @Override
     public APIResponse getResponse(String baseCurrency, String quoteCurrency) {
-        IAPIDataProvider baseCurrencyProvider = getProviderForCurrency(baseCurrency);
-        IAPIDataProvider quoteCurrencyProvider = getProviderForCurrency(quoteCurrency);
+        IAPIDataProvider baseCurrencyProvider = getProviderForCurrencies(baseCurrency, quoteCurrency);
+        IAPIDataProvider quoteCurrencyProvider = getProviderForCurrencies(quoteCurrency, baseCurrency);
         if (baseCurrencyProvider == null || quoteCurrencyProvider == null) {
             return getNotFoundResponse(baseCurrency, quoteCurrency);
         }
@@ -62,19 +62,25 @@ public class ComplexCurrencyDataProvider implements ICurrencyDataProvider {
         return requestedCurrencyPair;
     }
 
-    private IAPIDataProvider getProviderForCurrency(String currency) {
-        if (currency == null) {
+    private IAPIDataProvider getProviderForCurrencies(String searchedCurrency, String anotherCurrency) {
+        if (searchedCurrency == null || anotherCurrency == null) {
             return null;
         }
+        searchedCurrency = searchedCurrency.toUpperCase();
+        anotherCurrency = anotherCurrency.toUpperCase();
 
-        currency = currency.toUpperCase();
+        IAPIDataProvider currencyProvider = null;
         for (IAPIDataProvider provider : apiProviders) {
-            if (provider.getAvailableCurrencies().contains(currency)) {
-                return provider;
+            if (provider.getAvailableCurrencies().contains(searchedCurrency)) {
+                if (provider.getAvailableCurrencies().contains(anotherCurrency)) {
+                    return provider;
+                } else {
+                    currencyProvider = provider;
+                }
             }
         }
 
-        return null;
+        return currencyProvider;
     }
 
     private CurrencyPair getCurrencyValueFromProviders(
