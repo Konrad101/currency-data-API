@@ -26,7 +26,7 @@ public class BittrexCurrencyProvider implements IAPIDataProvider {
     private final IAPIConnector apiConnector;
 
 
-    public BittrexCurrencyProvider(@Qualifier("Http") IAPIConnector apiConnector) {
+    public BittrexCurrencyProvider(IAPIConnector apiConnector) {
         this.apiConnector = apiConnector;
         if (availableCurrencies == null) {
             downloadAllCurrenciesFromAPI();

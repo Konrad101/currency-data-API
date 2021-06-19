@@ -28,7 +28,7 @@ public class SimpleProviderManagerManager implements IProviderManager {
                     LocalDate.now());
         }
 
-        return new APIResponse(404, "Currency not available.");
+        return new APIResponse(false, "Currency not available.");
     }
 
     private String getSource() {

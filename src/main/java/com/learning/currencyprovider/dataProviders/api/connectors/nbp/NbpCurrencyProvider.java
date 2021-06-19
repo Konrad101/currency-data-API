@@ -26,7 +26,7 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
     private static Set<String> availableCurrencies;
     private static LocalDate lastUpdateDate;
 
-    public NbpCurrencyProvider(@Qualifier("Http") IAPIConnector apiConnector) {
+    public NbpCurrencyProvider(IAPIConnector apiConnector) {
         this.apiConnector = apiConnector;
         if (availableCurrencies == null) {
             downloadAvailableCurrenciesFromAPI();

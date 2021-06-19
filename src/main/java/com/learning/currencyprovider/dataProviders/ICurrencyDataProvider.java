@@ -10,5 +10,4 @@ public interface ICurrencyDataProvider {
     void updateAvailableCurrencies();
     Set<String> getAvailableCurrencies();
     APIResponse getResponse(String baseCurrency, String quoteCurrency);
-    String getSource();
 }

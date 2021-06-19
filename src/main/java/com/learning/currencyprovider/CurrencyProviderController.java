@@ -2,6 +2,7 @@ package com.learning.currencyprovider;
 
 import com.learning.currencyprovider.dataProviders.ICurrencyDataProvider;
 import com.learning.currencyprovider.dataProviders.api.APIResponse;
+
 import io.github.bucket4j.Bucket;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -16,7 +17,7 @@ public class CurrencyProviderController {
     private final Bucket recentCurrencyPairBucket;
     private final Bucket updateCurrenciesBucket;
 
-    public CurrencyProviderController(@Qualifier("Complex") ICurrencyDataProvider dataProvider,
+    public CurrencyProviderController(@Qualifier("ComplexProvider") ICurrencyDataProvider dataProvider,
                                       @Qualifier("CurrencyPairLimiter") Bucket recentCurrencyPairBucket,
                                       @Qualifier("AvailableCurrenciesUpdateLimiter") Bucket updateCurrenciesBucket) {
         currencyDataProvider = dataProvider;
@@ -51,7 +52,6 @@ public class CurrencyProviderController {
                 HttpStatus.TOO_MANY_REQUESTS);
     }
 
-    // TO-DO: limiter per user ip address
     private boolean controllerCanConsumeRequest() {
         return recentCurrencyPairBucket.tryConsume(1);
     }
