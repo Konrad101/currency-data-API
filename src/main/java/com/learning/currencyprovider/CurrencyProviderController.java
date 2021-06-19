@@ -16,7 +16,7 @@ public class CurrencyProviderController {
     private final Bucket recentCurrencyPairBucket;
     private final Bucket updateCurrenciesBucket;
 
-    public CurrencyProviderController(@Qualifier("Complex") ICurrencyDataProvider dataProvider,
+    public CurrencyProviderController(@Qualifier("Simple") ICurrencyDataProvider dataProvider,
                                       @Qualifier("CurrencyPairLimiter") Bucket recentCurrencyPairBucket,
                                       @Qualifier("AvailableCurrenciesUpdateLimiter") Bucket updateCurrenciesBucket) {
         currencyDataProvider = dataProvider;
@@ -25,11 +25,11 @@ public class CurrencyProviderController {
     }
 
     @Cacheable(value = "recent-rates-cache", key = "'CurrencyPairCache'+#baseCurrency+#quoteCurrency",
-            unless = "#result.statusCode != 429")
+            unless = "#result.statusCodeValue == 429")
     @RequestMapping(value = "/currency_pair/{base_currency}-{quote_currency}", method = RequestMethod.GET)
     public ResponseEntity<APIResponse> getCurrencyData(@PathVariable(value = "base_currency") String baseCurrency,
                                                        @PathVariable(value = "quote_currency") String quoteCurrency) {
-        if (controllerCanConsumeRequest()) {
+        if (recentCurrencyPairBucket.tryConsume(1)) {
             APIResponse response = currencyDataProvider.getResponse(baseCurrency, quoteCurrency);
             return ResponseEntity.ok(response);
         }
@@ -49,10 +49,5 @@ public class CurrencyProviderController {
         return new ResponseEntity<>(
                 new APIResponse(false, "Available currencies were recently updated."),
                 HttpStatus.TOO_MANY_REQUESTS);
-    }
-
-    // TO-DO: limiter per user ip address
-    private boolean controllerCanConsumeRequest() {
-        return recentCurrencyPairBucket.tryConsume(1);
     }
 }
