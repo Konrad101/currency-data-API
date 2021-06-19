@@ -24,7 +24,7 @@ public class CurrencyProviderConfiguration extends CachingConfigurerSupport {
         cacheConfiguration.setName("recent-rates-cache");
         cacheConfiguration.setMemoryStoreEvictionPolicy("LRU");
         cacheConfiguration.setMaxBytesLocalHeap(5000L);
-        cacheConfiguration.setTimeToLiveSeconds(1800);
+        cacheConfiguration.setTimeToLiveSeconds(10);
 
         net.sf.ehcache.config.Configuration config = new net.sf.ehcache.config.Configuration();
         config.addCache(cacheConfiguration);
@@ -42,8 +42,9 @@ public class CurrencyProviderConfiguration extends CachingConfigurerSupport {
         return createLimiter(2, Duration.ofSeconds(1));
     }
 
+    // change limiter per all users
     @Bean("AvailableCurrenciesUpdateLimiter")
-    public Bucket bandwidth() {
+    public Bucket updateCurrenciesBucket() {
         return createLimiter(1, Duration.ofHours(4));
     }
 
