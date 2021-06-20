@@ -11,7 +11,7 @@ import java.util.*;
 
 @Component
 @Qualifier("Simple")
-public class SimpleProviderManagerManager implements ICurrencyDataProvider {
+public class SimpleManager implements ICurrencyDataManager {
     @Override
     public void updateAvailableCurrencies() {
 

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 
 @Component
-public interface ICurrencyDataProvider {
+public interface ICurrencyDataManager {
     void updateAvailableCurrencies();
     Set<String> getAvailableCurrencies();
     APIResponse getResponse(String baseCurrency, String quoteCurrency);

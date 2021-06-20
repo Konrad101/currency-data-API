@@ -1,6 +1,6 @@
 package com.learning.currencyprovider.controllers;
 
-import com.learning.currencyprovider.dataProviders.ICurrencyDataProvider;
+import com.learning.currencyprovider.dataProviders.ICurrencyDataManager;
 import com.learning.currencyprovider.dataProviders.api.APIResponse;
 import io.github.bucket4j.Bucket;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class CurrencyProviderController {
-    private final ICurrencyDataProvider currencyDataProvider;
+    private final ICurrencyDataManager currencyDataProvider;
     private final Bucket recentCurrencyPairBucket;
     private final Bucket updateCurrenciesBucket;
 
-    public CurrencyProviderController(@Qualifier("APIProvider") ICurrencyDataProvider dataProvider,
+    public CurrencyProviderController(@Qualifier("APIProvider") ICurrencyDataManager dataProvider,
                                       @Qualifier("CurrencyPairLimiter") Bucket recentCurrencyPairBucket,
                                       @Qualifier("AvailableCurrenciesUpdateLimiter") Bucket updateCurrenciesBucket) {
         currencyDataProvider = dataProvider;

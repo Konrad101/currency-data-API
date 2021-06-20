@@ -14,7 +14,7 @@ import java.util.*;
 
 @Component
 @Qualifier("APIProvider")
-public class APIProvidersManager implements ICurrencyDataProvider {
+public class APIProvidersManager implements ICurrencyDataManager {
     private final List<IAPIDataProvider> apiProviders;
 
 
