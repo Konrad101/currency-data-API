@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 
 @RestController
 public class CurrencyProviderController {
@@ -30,8 +32,16 @@ public class CurrencyProviderController {
     public ResponseEntity<APIResponse> getCurrencyData(@PathVariable(value = "base_currency") String baseCurrency,
                                                        @PathVariable(value = "quote_currency") String quoteCurrency) {
         if (recentCurrencyPairBucket.tryConsume(1)) {
-            APIResponse response = currencyDataProvider.getResponse(baseCurrency, quoteCurrency);
-            return ResponseEntity.ok(response);
+            Set<String> availableCurrencies = currencyDataProvider.getAvailableCurrencies();
+            if (availableCurrencies.contains(baseCurrency) && availableCurrencies.contains(quoteCurrency)) {
+                APIResponse response = currencyDataProvider.getResponse(baseCurrency, quoteCurrency);
+                return ResponseEntity.ok(response);
+            }
+
+            String message = availableCurrencies.contains(quoteCurrency) ?
+                    baseCurrency + " currency is not available" :
+                    quoteCurrency + " currency is not available";
+            return new ResponseEntity<>(new APIResponse(false, message), HttpStatus.NOT_FOUND);
         }
 
         return new ResponseEntity<>(
