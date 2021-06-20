@@ -68,7 +68,8 @@ public class NbpCurrencyProvider implements IAPIDataProvider {
 
     @Override
     public CurrencyPair getRecentCurrencyRate(String baseCurrency, String quoteCurrency) {
-        if (baseCurrency.equalsIgnoreCase(quoteCurrency) ||
+        if (baseCurrency == null || quoteCurrency == null ||
+                baseCurrency.equalsIgnoreCase(quoteCurrency) ||
                 !availableCurrencies.contains(baseCurrency.toUpperCase()) ||
                 !availableCurrencies.contains(quoteCurrency.toUpperCase())) {
             return null;
