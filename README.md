@@ -7,7 +7,7 @@ API provides most recent data about currencies depending on implemented data pro
 
 ### Built With
 
-* Java SDK 14.0.1 
+* Java SDK 11.0.2 
 
 * Spring Boot 2.5.0
 
