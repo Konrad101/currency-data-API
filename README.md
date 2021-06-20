@@ -25,6 +25,8 @@ To launch the app you need to type command as below
 mvn spring-boot:run
 ```
 
+By default the app will start at <http://localhost:8080>
+
 ### Explore REST API
 
 #### Endpoint: currency_pair 
