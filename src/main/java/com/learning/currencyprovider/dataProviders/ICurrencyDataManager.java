@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
-@Component
 public interface ICurrencyDataManager {
     void updateAvailableCurrencies();
     Set<String> getAvailableCurrencies();
